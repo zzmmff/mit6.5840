@@ -1,15 +1,19 @@
 package mr
 
-import "log"
-import "net"
-import "os"
-import "net/rpc"
-import "net/http"
+import (
+	"encoding/json"
+	"log"
+	"net"
+	"net/http"
+	"net/rpc"
+	"os"
+)
 
 
 type Coordinator struct {
-	// Your definitions here.
-
+	// Your definitions here
+	nRecuder int
+	files []string
 }
 
 // Your code here -- RPC handlers for the worker to call.
@@ -58,13 +62,15 @@ func (c *Coordinator) Done() bool {
 // create a Coordinator.
 // main/mrcoordinator.go calls this function.
 // nReduce is the number of reduce tasks to use.
+//每一个Mapper产生的 K-V数组，需要由nReduce个Reducer来处理.
+// files 需要处理的文件名称slice
 //
 func MakeCoordinator(files []string, nReduce int) *Coordinator {
 	c := Coordinator{}
-
 	// Your code here.
-
-
+	c.files = files
+	c.nRecuder = nReduce
+	//启动mater节点的http服务
 	c.server()
 	return &c
 }

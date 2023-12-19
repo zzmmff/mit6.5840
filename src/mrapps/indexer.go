@@ -17,6 +17,7 @@ import "sort"
 // In this framework, the key is the name of the file that is being processed,
 // and the value is the file's contents. The return value should be a slice of
 // key/value pairs, each represented by a mr.KeyValue.
+//构建倒排索引
 func Map(document string, value string) (res []mr.KeyValue) {
 	m := make(map[string]bool)
 	words := strings.FieldsFunc(value, func(x rune) bool { return !unicode.IsLetter(x) })

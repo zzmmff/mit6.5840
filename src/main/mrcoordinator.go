@@ -1,6 +1,6 @@
 package main
 
-//
+// Master process for MapReduce.
 // start the coordinator process, which is implemented
 // in ../mr/coordinator.go
 //
@@ -20,6 +20,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	//启动 master 节点，等待任务完成
 	m := mr.MakeCoordinator(os.Args[1:], 10)
 	for m.Done() == false {
 		time.Sleep(time.Second)

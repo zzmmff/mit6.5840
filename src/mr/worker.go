@@ -27,14 +27,21 @@ func ihash(key string) int {
 
 //
 // main/mrworker.go calls this function.
+// worker 节点，传入 map 和 reduce 函数
 //
 func Worker(mapf func(string, string) []KeyValue,
 	reducef func(string, []string) string) {
 
 	// Your worker implementation here.
-
-	// uncomment to send the Example RPC to the coordinator.
+	//在此方法中，需要RPC调用 master，获取任务
+	//可能是Map任务，也可能是Reduce任务
+	//如果是Map任务，其输出intermediate 需要以文件保存在本地
+	//同时，需要一句nReducer的大小来决定intermediate文件的个数
+	//建议采用Json格式存储，方便Reducer读取
+	//A reasonable naming convention for intermediate files is mr-X-Y, 
+	//where X is the Map task number, and Y is the reduce task number.
 	// CallExample()
+	
 
 }
 

@@ -47,6 +47,7 @@ func main() {
 		}
 		file.Close()
 		kva := mapf(filename, string(content))
+		//中间层是为了模拟完整的 MR 过程,在此处没有其它的作用
 		intermediate = append(intermediate, kva...)
 	}
 
@@ -75,6 +76,7 @@ func main() {
 		for k := i; k < j; k++ {
 			values = append(values, intermediate[k].Value)
 		}
+		//相同的 key，调用 reduce 函数
 		output := reducef(intermediate[i].Key, values)
 
 		// this is the correct format for each line of Reduce output.
