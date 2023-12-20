@@ -1,10 +1,13 @@
 package mr
 
-import "fmt"
-import "log"
-import "net/rpc"
-import "hash/fnv"
+import (
+	"fmt"
+	"hash/fnv"
+	"log"
+	"net/rpc"
 
+	"github.com/google/uuid"
+)
 
 //
 // Map functions return a slice of KeyValue.
@@ -12,6 +15,11 @@ import "hash/fnv"
 type KeyValue struct {
 	Key   string
 	Value string
+}
+
+type WorkerMateData struct {
+	WorkerId string
+	WorkType int // 0: map, 1: reduce
 }
 
 //
@@ -31,18 +39,20 @@ func ihash(key string) int {
 //
 func Worker(mapf func(string, string) []KeyValue,
 	reducef func(string, []string) string) {
-
 	// Your worker implementation here.
+	workMateData := WorkerMateData{}
+	//generate a random worker id using UUID
+	workMateData.WorkerId = uuid.New().String()
 	//在此方法中，需要RPC调用 master，获取任务
 	//可能是Map任务，也可能是Reduce任务
 	//如果是Map任务，其输出intermediate 需要以文件保存在本地
-	//同时，需要一句nReducer的大小来决定intermediate文件的个数
+	//这里使用多线程来模拟多个worker节点
+	//The reducer output needn't be sorted by key,because the "test-mr.sh"  will sort the content
+	//同时，需要依据nReducer的大小来决定intermediate文件的个数
 	//建议采用Json格式存储，方便Reducer读取
 	//A reasonable naming convention for intermediate files is mr-X-Y, 
 	//where X is the Map task number, and Y is the reduce task number.
 	// CallExample()
-	
-
 }
 
 //

@@ -12,8 +12,9 @@ import (
 
 type Coordinator struct {
 	// Your definitions here
-	nRecuder int
+	nReducer int
 	files []string
+	workerTaskMap map[string]string //workerId -> fileName
 }
 
 // Your code here -- RPC handlers for the worker to call.
@@ -25,6 +26,32 @@ type Coordinator struct {
 //
 func (c *Coordinator) Example(args *ExampleArgs, reply *ExampleReply) error {
 	reply.Y = args.X + 1
+	return nil
+}
+
+func (c* Coordinator) AskTask(args *AskTaskArgs, reply *TaskReply) error {
+	//根据worker的类型，分配任务
+	//如果是map任务，需要分配文件名
+	//如果是reduce任务，需要分配文件名和nReducer
+	//如果没有任务，返回空
+	if args.WorkerType == 0 {
+		//map任务
+		if len(c.files) > 0 {
+			reply.FileName = c.files[0]
+			c.files = c.files[1:]
+			c.workerTaskMap[args.WorkerId] = reply.FileName
+		} else {
+			reply.FileName = ""
+		}
+	} else {
+		//reduce任务
+		if len(c.workerTaskMap) > 0 {
+			reply.FileName = c.workerTaskMap[args.WorkerId]
+			reply.NReducer = c.nReducer
+		} else {
+			reply.FileName = ""
+		}
+	}
 	return nil
 }
 
@@ -69,7 +96,7 @@ func MakeCoordinator(files []string, nReduce int) *Coordinator {
 	c := Coordinator{}
 	// Your code here.
 	c.files = files
-	c.nRecuder = nReduce
+	c.nReducer = nReduce
 	//启动mater节点的http服务
 	c.server()
 	return &c
