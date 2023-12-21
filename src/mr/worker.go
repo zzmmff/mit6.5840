@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/rpc"
 	"os"
+	"sort"
 
 	"github.com/google/uuid"
 )
@@ -72,7 +73,17 @@ func Worker(mapf func(string, string) []KeyValue,
 		//call map function
 		kv := mapf(tr.FileName, content)	
 		//partition the intermediate data into nReduce files
-		
+		intermediate := []KeyValue{}
+		intermediate = append(intermediate, kv...)
+		//sort by key
+		sort.Sort(ByKey(intermediate))
+		i := 0
+		for i< len(intermediate) { //iterate the intermediate data
+			j := i + 1
+			for j < len(intermediate) && intermediate[j].Key == intermediate[i].Key {
+				j++
+			}
+		}
 	}
 
 }
