@@ -24,13 +24,15 @@ type ExampleReply struct {
 
 // Add your RPC definitions here.
 type AskTaskArgs struct {
-	WorkerId int
+	WorkerId string
 	WorkerType int // 0: map, 1: reduce
 }
 
 type TaskReply struct {
 	FileName string //文件名称
-	NReducer int //需要的Reducer数量
+	WorkerType int // 0: map, 1: reduce
+	NReducer int //reduce的数量
+	TaskNumberIndex int//任务编号
 }
 
 
