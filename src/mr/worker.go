@@ -1,6 +1,7 @@
 package mr
 
 import (
+	"encoding/json"
 	"fmt"
 	"hash/fnv"
 	"io"
@@ -75,6 +76,7 @@ func Worker(mapf func(string, string) []KeyValue,
 		//partition the intermediate data into nReduce files
 		intermediate := []KeyValue{}
 		intermediate = append(intermediate, kv...)
+		intermediateFileNames := []string{}
 		//sort by key
 		sort.Sort(ByKey(intermediate))
 		i := 0
@@ -83,9 +85,38 @@ func Worker(mapf func(string, string) []KeyValue,
 			for j < len(intermediate) && intermediate[j].Key == intermediate[i].Key {
 				j++
 			}
+			values := []string{}
+			for k:=i; k<j; k++{
+				values = append(values, intermediate[k].Value)
+			}
+			//store the intermediate data by hash(key)
+			reduceTaskIndex := ihash(intermediate[i].Key)	
+			fileName := intermediateFileName(tr.TaskNumberIndex, reduceTaskIndex)
+			intermediateFileNames = append(intermediateFileNames,fileName)
+			file, err := os.OpenFile(fileName,os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)	
+			if err != nil {
+				log.Fatal("cannot open %v", fileName)
+				//TODO handle this error
+			}
+			//TODO This part can run in another thread
+			enc := json.NewEncoder(file)
+			for _,kv := range values {
+				err := enc.Encode(&kv)	
+				if (err != nil) {
+					log.Fatal("cannot encode %v", kv)
+					//TODO handle this error
+				}
+			}
+			//////////////////////////////////////////
 		}
+		//Call the master node to report the task completion
+		CallTaskCompletion(workMateData,tr.TaskNumberIndex,intermediateFileNames)
 	}
 
+}
+
+func intermediateFileName(mapTaskIndex int, reduceTaskIndex int) string {
+	return fmt.Sprintf("mr-%v-%v", mapTaskIndex, reduceTaskIndex)
 }
 
 // 读取文件中的内容，返回 string
@@ -123,6 +154,25 @@ func CallAskTask(workMateData WorkerMateData) (TaskReply, error) {
 		return reply, fmt.Errorf("call failed")
 	}
 	return reply, nil
+}
+
+func CallTaskCompletion(mateData WorkerMateData,taskIndexNumber int,intermediateFileNames []string) (TaskCompletionReply,error){
+	args := TaskCompletion{
+		WorkerType: mateData.WorkType,
+		WorkerId: mateData.WorkerId,
+		TaskNumberIndex: taskIndexNumber,
+	}
+	if args.WorkerType == 0 { //mapTask
+		args.IntermediateFileNames = intermediateFileNames
+	}
+	reply := TaskCompletionReply{}
+	ok := call("Coordinator.TaskCompletion", &args, &reply)
+	if ok {
+		fmt.Printf("reply.Success %v\n", reply.Success)
+	} else {
+		return reply, fmt.Errorf("call failed")
+	}
+	return reply,nil
 }
 
 func CallExample() {

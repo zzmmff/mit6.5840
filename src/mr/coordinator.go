@@ -54,6 +54,16 @@ func (c* Coordinator) AskTask(args *AskTaskArgs, reply *TaskReply) error {
 	return nil
 }
 
+//任务完成
+func (c* Coordinator) TaskCompletion(args *TaskCompletion,reply *TaskCompletionReply) error{
+	if args.WorkerType	== 0{ //map
+		
+	}else { //reduce
+		//Handle reduce task
+	}
+	return nil
+}
+
 
 //
 // start a thread that listens for RPCs from worker.go
